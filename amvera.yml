@@ -1,0 +1,6 @@
+build:
+  dockerfile: Dockerfile
+run:
+  command: python
+  args: scripts/start_amvera.py
+  containerPort: 8000
