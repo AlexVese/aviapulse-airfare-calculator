@@ -4,6 +4,8 @@
 
 ## Стек
 
+Для разработки фронтенда и помощи с бэкендом использовался **OpenAI Codex**.
+
 Python 3.12, Django **5.2.19**, PostgreSQL **17.12**, Django ORM/миграции/Templates, обычный JavaScript, локальный Plotly.js **3.3.0**, Gunicorn **27.0.1**, Caddy **2.11.9**, Docker Compose. Django закреплён на актуальном security-patch ветки 5.2: [официальный выпуск](https://www.djangoproject.com/weblog/2026/nov/03/security-releases/).
 
 ## Быстрый локальный запуск
