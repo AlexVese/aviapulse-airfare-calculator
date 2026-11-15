@@ -1,0 +1,36 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142b50">
+  <title>{% block title %}Авиапульс — аналитика спроса{% endblock %}</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="{% url 'calculator' %}" aria-label="Авиапульс — главная">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="m6 21 7-4-1-9 3-2 5 8 7-2 2 2-9 5-3 8-3 1-1-7-5 2Z"/></svg></span>
+        <span>авиапульс<span class="brand-caption">АНАЛИТИКА СПРОСА</span></span>
+      </a>
+      <nav aria-label="Основная навигация">
+        <a class="nav-calc" href="{% url 'calculator' %}">Калькулятор</a>
+        {% if user.is_authenticated %}
+          <span class="user-name">{{ user.username }}</span>
+          <form action="{% url 'accounts:logout' %}" method="post">{% csrf_token %}<button class="nav-link" type="submit">Выйти</button></form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">Войти</a>
+          <a class="nav-button" href="{% url 'accounts:register' %}">Создать аккаунт <span aria-hidden="true">↗</span></a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  {% block content %}{% endblock %}
+  <footer class="footer"><span>Авиапульс <span class="footer-dot">·</span> кабинет аналитика</span><span>Прогноз помогает принять решение. Билеты здесь не продаются.</span></footer>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

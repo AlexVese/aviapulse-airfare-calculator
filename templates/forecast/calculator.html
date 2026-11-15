@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<main class="workspace">
+  <section class="hero">
+    <div>
+      <div class="eyebrow"><span class="tiny-line"></span> ИНСТРУМЕНТ АНАЛИТИКА</div>
+      <h1>Как цена влияет<br>на <span>спрос?</span></h1>
+      <p class="hero-text">Оцените продажи и загрузку рейса.<br>Один расчёт — девять сценариев спроса.</p>
+    </div>
+    <div class="period-panel">
+      <div class="period-icon" aria-hidden="true">◷</div>
+      <div><span class="mini-label">ДОСТУПНЫЙ ПРОГНОЗ</span><strong id="period">Загрузка данных…</strong><span id="coverage" class="muted">Получаем направления и даты</span></div>
+    </div>
+  </section>
+
+  <div class="calculator-layout">
+    <aside class="control-column">
+      <section class="panel controls" aria-labelledby="form-title">
+        <div class="section-heading"><span class="step-number">01</span><h2 id="form-title">Параметры рейса</h2></div>
+        <form id="forecast-form" novalidate>
+          {% csrf_token %}
+          <div class="field"><label for="origin">Откуда</label><select id="origin" name="origin" disabled required><option value="">Загрузка…</option></select><span class="field-error" id="origin-error"></span></div>
+          <div class="route-connector" aria-hidden="true"><span></span>↓<span></span></div>
+          <div class="field"><label for="destination">Куда</label><select id="destination" name="destination" disabled required><option value="">Загрузка…</option></select><span class="field-error" id="destination-error"></span></div>
+          <div class="field date-field"><label for="date">Дата вылета</label><select id="date" name="date" disabled required><option value="">Выберите направление</option></select><span class="field-error" id="date-error"></span></div>
+          <div class="field"><label for="price">Цена за билет</label><div class="price-input"><input id="price" name="price" type="number" min="0" step="any" inputmode="decimal" placeholder="Например, 9000" autocomplete="off" required aria-describedby="price-note price-error"><span>₽</span></div><span class="field-error" id="price-error"></span></div>
+          <p id="price-note" class="price-note">Можно проверить любую неотрицательную цену.</p>
+          <button class="primary-button" id="calculate" type="submit" disabled><span class="button-text">Рассчитать прогноз</span><span class="button-arrow" aria-hidden="true">↗</span><span class="spinner" hidden></span></button>
+        </form>
+        <p class="form-footnote"><span aria-hidden="true">◇</span> Без бронирования и изменения остатка мест</p>
+      </section>
+      <section class="method-note"><span class="mini-label">КАК ЭТО РАБОТАЕТ</span><p>Берём готовый ML-прогноз и пересчитываем спрос по введённой цене. Рост цены обычно снижает спрос.</p><a href="#chart-note">Как читать квантили <span aria-hidden="true">↓</span></a></section>
+    </aside>
+
+    <section class="results-column" aria-labelledby="results-title">
+      <div class="results-heading"><div class="section-heading"><span class="step-number">02</span><h2 id="results-title">Прогноз рейса</h2></div><span class="status-chip" id="result-status">Ожидает расчёта</span></div>
+      <div id="message" role="status" aria-live="polite" class="message" hidden></div>
+      <div id="empty-state" class="empty-state"><span class="empty-mark" aria-hidden="true">↗</span><div><strong>Начните с параметров рейса</strong><p>Выберите направление, дату и цену — покажем прогноз.</p></div></div>
+      <div id="result" hidden>
+        <div class="flight-summary"><div><span class="mini-label">ВЫБРАННЫЙ РЕЙС</span><strong id="flight-name"></strong><span id="flight-date" class="muted"></span></div><div class="price-summary"><span class="mini-label">ВАША ЦЕНА</span><strong id="flight-price"></strong></div></div>
+        <div class="metric-grid">
+          <article class="metric"><span class="metric-label">Вместимость</span><strong id="seats">—</strong><span class="metric-unit">мест на рейсе</span><span class="metric-index">01</span></article>
+          <article class="metric metric-highlight"><span class="metric-label" id="demand-label">Медианный спрос</span><strong id="demand">—</strong><span class="metric-unit">пассажиров</span><span class="metric-index">02</span></article>
+          <article class="metric"><span class="metric-label">Прогноз продаж</span><strong id="sales">—</strong><span class="metric-unit">билетов</span><span class="metric-index">03</span></article>
+          <article class="metric"><span class="metric-label">Ожидаемые<br>свободные места</span><strong id="free">—</strong><span class="metric-unit">мест по прогнозу</span><span class="metric-index">04</span></article>
+        </div>
+        <div class="interpretation"><span class="interpretation-dot" aria-hidden="true"></span><p id="interpretation"></p><span id="load-factor" class="load-factor"></span></div>
+        <p id="negative-note" class="negative-note" hidden></p>
+      </div>
+      <section class="panel chart-panel" aria-labelledby="chart-title">
+        <div class="chart-heading"><div><span class="mini-label">ДИАПАЗОН ВОЗМОЖНЫХ СЦЕНАРИЕВ</span><h2 id="chart-title">Квантили спроса при выбранной цене</h2></div><span class="chart-badge">10–90%</span></div>
+        <div class="chart-mode"><span id="mode-description">Спрос не ниже нуля</span><label class="mode-switch" for="raw-mode"><input id="raw-mode" type="checkbox" aria-describedby="mode-description"><span class="switch-track" aria-hidden="true"></span>Исходная формула</label></div>
+        <div id="chart" class="chart" role="img" aria-label="График девяти квантилей спроса"><div class="chart-placeholder"><div class="placeholder-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><p>Здесь появится диапазон прогноза</p></div></div>
+        <p id="chart-note" class="chart-note">Квантили — границы прогнозируемого спроса, а не вероятность прихода ровно такого числа людей. Соответствие вероятностям зависит от качества модели.</p>
+      </section>
+      <div class="data-caption"><span id="dataset-meta">Источник: готовый ML-прогноз</span><span>Свободные места — оценка по прогнозу, не данные системы бронирования.</span></div>
+    </section>
+  </div>
+</main>
+{% endblock %}
+{% block scripts %}
+<script defer src="{% static 'vendor/plotly-basic-3.3.0.min.js' %}"></script>
+<script defer src="{% static 'calculator.js' %}"></script>
+{% endblock %}
